@@ -1,2 +1,4 @@
 0.0.1
 - First Try
+0.0.2
+- Added missing categories and logos

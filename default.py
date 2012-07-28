@@ -15,27 +15,22 @@ else:
 viewMode=str(settings.getSetting("viewMode"))
 
 def index():
-        addDir("Live Feeds","Feeds",'listVideos',"")
-        addDir("Live TV Channels","LiveTV",'listVideos',"")
-        addDir("Live HD Events","EventsHD",'listVideos',"")
-        addDir("Featured Videos","Featured",'listVideos',"")
-        addDir("Latest Highlights","Highlights",'listVideos',"")
+        content = getUrl("http://www.eurovisionsports.tv/london2012/xml/london2012.xml")
+        spl=content.split('<channel id=')
+        for i in range(1,len(spl),1):
+            entry=spl[i]
+            match=re.compile('<title><!\\[CDATA\\[(.+?)\\]\\]></title>', re.DOTALL).findall(entry)
+            title=match[0]
+            match=re.compile('<graphicThumbnailUrl>(.+?)</graphicThumbnailUrl>', re.DOTALL).findall(entry)
+            thumb=match[0]
+            addDir(title,title,'listVideos',thumb)
         xbmcplugin.endOfDirectory(pluginhandle)
         if forceViewMode==True:
           xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 
-def listVideos(url):
+def listVideos(type):
         content = getUrl("http://www.eurovisionsports.tv/london2012/xml/london2012.xml")
-        if url=="Feeds":
-          content = content[content.find('<![CDATA[12 Live Feeds and News]]>'):]
-        elif url=="LiveTV":
-          content = content[content.find('<![CDATA[EBU Members Live]]>'):]
-        elif url=="EventsHD":
-          content = content[content.find('<![CDATA[Live HD Events]]>'):]
-        elif url=="Featured":
-          content = content[content.find('<![CDATA[Features]]>'):]
-        elif url=="Highlights":
-          content = content[content.find('<![CDATA[Latest Highlights]]>'):]
+        content = content[content.find('<![CDATA['+type+']]>'):]
         content = content[:content.find('</channel>')]
         spl=content.split('<item id=')
         for i in range(1,len(spl),1):
@@ -69,7 +64,7 @@ def playVideo(urlMain):
             if bitrate>maxBitrate:
               maxBitrate=bitrate
               url=urlTemp
-          fullUrl=base+url+"&v=1.1.12&fp=WIN%2011,3,300,268&r=&g=&primaryToken="
+          fullUrl=base+url+"&v=1.1.12&fp=WIN%2011,3,300,268&r=&g="
         elif urlMain.find(".xml")>0:
           playpath=urlMain[urlMain.find("gjmf=")+5:]
           match=re.compile('<hostname>(.+?)</hostname>', re.DOTALL).findall(content)
@@ -86,7 +81,7 @@ def playVideo(urlMain):
         return xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
 
 def cleanTitle(title):
-        title=title.replace("&lt;","<").replace("&gt;",">").replace("&amp;","&").replace("&#039;","\\").replace("&quot;","\"").replace("&szlig;","ß").replace("&ndash;","-")
+        title=title.replace("&lt;","<").replace("&gt;",">").replace("&amp;","&").replace("&#039;","'").replace("&quot;","\"").replace("&szlig;","ß").replace("&ndash;","-")
         title=title.replace("&Auml;","Ä").replace("&Uuml;","Ü").replace("&Ouml;","Ö").replace("&auml;","ä").replace("&uuml;","ü").replace("&ouml;","ö")
         title=title.strip()
         return title
@@ -139,6 +134,8 @@ if type(url)==type(str()):
 
 if mode == 'listVideos':
     listVideos(url)
+elif mode == 'listCategories':
+    listCategories()
 elif mode == 'playVideo':
     playVideo(url)
 else:
