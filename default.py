@@ -4,15 +4,24 @@ import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket
 
 pluginhandle = int(sys.argv[1])
 xbox = xbmc.getCondVisibility("System.Platform.xbox")
-settings = xbmcaddon.Addon(id='plugin.video.eurovisionsports_tv')
-translation = settings.getLocalizedString
+addon = xbmcaddon.Addon(id='plugin.video.eurovisionsports_tv')
+translation = addon.getLocalizedString
+akamaiProxyServer = xbmc.translatePath(addon.getAddonInfo('path')+"/akamaiSecureHD.py")
 
-forceViewMode=settings.getSetting("forceViewMode")
+try:
+  getUrl("http://127.0.0.1:64653/version")
+  proxyIsRunning=True
+except:
+  proxyIsRunning=False
+if not proxyIsRunning:
+  xbmc.executebuiltin('RunScript('+akamaiProxyServer+')')
+
+forceViewMode=addon.getSetting("forceViewMode")
 if forceViewMode=="true":
   forceViewMode=True
 else:
   forceViewMode=False
-viewMode=str(settings.getSetting("viewMode"))
+viewMode=str(addon.getSetting("viewMode"))
 
 def index():
         content = getUrl("http://www.eurovisionsports.tv/london2012/xml/london2012.xml")
@@ -65,6 +74,10 @@ def playVideo(urlMain):
               maxBitrate=bitrate
               url=urlTemp
           fullUrl=base+url+"&v=1.1.12&fp=WIN%2011,3,300,268&r=&g="
+          swfUrl="http://www.eurovisionsports.tv/london2012/site/Digotel.4.3.0.swf"
+          VIDb64 = base64.encodestring(fullUrl).replace('\n','')
+          SWFb64 = base64.encodestring(swfUrl).replace('\n','')
+          fullUrl = 'http://127.0.0.1:64653/secureconne/%s/%s' % (VIDb64,SWFb64)
         elif urlMain.find(".xml")>0:
           playpath=urlMain[urlMain.find("gjmf=")+5:]
           match=re.compile('<hostname>(.+?)</hostname>', re.DOTALL).findall(content)
@@ -115,6 +128,7 @@ def addLink(name,url,mode,iconimage):
         liz=xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
         liz.setInfo( type="Video", infoLabels={ "Title": name } )
         liz.setProperty('IsPlayable', 'true')
+        liz.setProperty('mimetype', 'video/x-flv')
         ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz)
         return ok
 
