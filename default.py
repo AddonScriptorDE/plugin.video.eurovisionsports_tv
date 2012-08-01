@@ -8,14 +8,6 @@ addon = xbmcaddon.Addon(id='plugin.video.eurovisionsports_tv')
 translation = addon.getLocalizedString
 akamaiProxyServer = xbmc.translatePath(addon.getAddonInfo('path')+"/akamaiSecureHD.py")
 
-try:
-  getUrl("http://127.0.0.1:64653/version")
-  proxyIsRunning=True
-except:
-  proxyIsRunning=False
-if not proxyIsRunning:
-  xbmc.executebuiltin('RunScript('+akamaiProxyServer+')')
-
 forceViewMode=addon.getSetting("forceViewMode")
 if forceViewMode=="true":
   forceViewMode=True
@@ -139,7 +131,15 @@ def addDir(name,url,mode,iconimage):
         liz.setInfo( type="Video", infoLabels={ "Title": name } )
         ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
         return ok
-         
+
+try:
+  getUrl("http://127.0.0.1:64653/version")
+  proxyIsRunning=True
+except:
+  proxyIsRunning=False
+if not proxyIsRunning:
+  xbmc.executebuiltin('RunScript('+akamaiProxyServer+')')
+
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 url=params.get('url')

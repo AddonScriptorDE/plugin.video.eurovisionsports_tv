@@ -4,3 +4,5 @@
 - Added missing categories and logos
 0.0.3
 - Added Akamai SecureHD Streaming Proxy Server (Thx@BlueCop)
+0.0.4
+- Fixed check for running Akamai SecureHD Streaming Proxy Server
